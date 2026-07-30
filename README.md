@@ -32,6 +32,11 @@ Contém: **1 Route API**, **1 Controller** e **1 Job**.
 docker compose up -d
 ```
 
+## Log Viewer
+Os logs (com emojis) podem ser vistos no navegador via [opcodesio/log-viewer](https://github.com/opcodesio/log-viewer):
+
+👉 **http://localhost:8001/log-viewer**
+
 ## Como rodar
 ```bash
 composer install
