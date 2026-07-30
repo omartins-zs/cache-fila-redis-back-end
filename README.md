@@ -22,8 +22,11 @@ Contém: **1 Route API**, **1 Controller** e **1 Job**.
 3. **readFiles** — lê os arquivos salvos para montar o payload.
 4. **sendToExternalApi** — envia o payload para o Projeto 3.
 
-## Redis
+## Redis (Fila **e** Cache)
 - `QUEUE_CONNECTION=redis` (no `.env`) — a fila usa Redis.
+- `CACHE_STORE=redis` (no `.env`) — em `sendToExternalApi` a resposta da API
+  externa é cacheada por um hash do payload (`Cache::store('redis')`). Payload
+  idêntico → **Cache HIT** (não chama a API de novo); payload novo → **Cache MISS**.
 - Suba o Redis com Docker:
 ```bash
 docker compose up -d

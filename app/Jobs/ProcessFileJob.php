@@ -7,6 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -151,6 +152,20 @@ class ProcessFileJob implements ShouldQueue
             'csv_data' => $data['csv_data'],
         ];
 
+        // CACHE COM REDIS: se um payload idêntico já foi enviado recentemente,
+        // reaproveitamos a resposta guardada no Redis e evitamos chamar a API
+        // externa de novo.
+        $cacheKey = 'external_api_response:' . md5(json_encode($payload));
+
+        if (Cache::store('redis')->has($cacheKey)) {
+            $resposta = Cache::store('redis')->get($cacheKey);
+            Log::info('🔁 Cache HIT (Redis) - resposta da API externa reaproveitada', ['key' => $cacheKey]);
+            Log::info('✅ Arquivos enviados para API externa com sucesso.', ['resposta' => $resposta]);
+
+            return;
+        }
+
+        Log::info('🟡 Cache MISS (Redis) - chamando a API externa', ['key' => $cacheKey]);
         Log::info('🚀 Enviando dados para API externa...', ['url' => $url]);
 
         try {
@@ -171,7 +186,12 @@ class ProcessFileJob implements ShouldQueue
             throw new \RuntimeException("API externa retornou HTTP {$response->status()}.");
         }
 
-        Log::info('✅ Arquivos enviados para API externa com sucesso.', ['resposta' => $response->json()]);
+        $resposta = $response->json();
+
+        // Guarda a resposta no Redis por 10 minutos.
+        Cache::store('redis')->put($cacheKey, $resposta, now()->addMinutes(10));
+
+        Log::info('✅ Arquivos enviados para API externa com sucesso.', ['resposta' => $resposta]);
     }
 
     /**
