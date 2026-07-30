@@ -47,6 +47,18 @@ return [
             'report' => false,
         ],
 
+        // Disco que representa o S3 mas SALVA LOCALMENTE (para estudo).
+        // Em producao, basta trocar 'driver' => 'local' por 'driver' => 's3'
+        // e preencher as credenciais AWS_* que o disco 's3' abaixo usa.
+        's3_local' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/s3'),
+            'url' => env('APP_URL').'/storage/s3',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
