@@ -155,10 +155,11 @@ class ProcessFileJob implements ShouldQueue
         // CACHE COM REDIS: se um payload idêntico já foi enviado recentemente,
         // reaproveitamos a resposta guardada no Redis e evitamos chamar a API
         // externa de novo.
+        // Usa o store padrão de cache (CACHE_STORE=redis no .env -> Redis).
         $cacheKey = 'external_api_response:' . md5(json_encode($payload));
 
-        if (Cache::store('redis')->has($cacheKey)) {
-            $resposta = Cache::store('redis')->get($cacheKey);
+        if (Cache::has($cacheKey)) {
+            $resposta = Cache::get($cacheKey);
             Log::info('🔁 Cache HIT (Redis) - resposta da API externa reaproveitada', ['key' => $cacheKey]);
             Log::info('✅ Arquivos enviados para API externa com sucesso.', ['resposta' => $resposta]);
 
@@ -188,8 +189,8 @@ class ProcessFileJob implements ShouldQueue
 
         $resposta = $response->json();
 
-        // Guarda a resposta no Redis por 10 minutos.
-        Cache::store('redis')->put($cacheKey, $resposta, now()->addMinutes(10));
+        // Guarda a resposta no cache (Redis) por 10 minutos.
+        Cache::put($cacheKey, $resposta, now()->addMinutes(10));
 
         Log::info('✅ Arquivos enviados para API externa com sucesso.', ['resposta' => $resposta]);
     }
