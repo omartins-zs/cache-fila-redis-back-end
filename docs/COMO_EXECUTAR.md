@@ -64,3 +64,5 @@ Este projeto **não possui tela de login**. O endpoint `POST /api/process-files`
 ## Outros documentos
 
 - [README.md](../README.md) — Visão geral do Back-end e do fluxo dos 3 projetos
+
+- [ACESSOS_TESTES.md](ACESSOS_TESTES.md) — Credenciais, URLs e como testar o fluxo
